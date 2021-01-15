@@ -6,4 +6,5 @@ spring:
     password:
 
   jpa:
-    hibernate: create
+    hibernate:
+      ddl-auto: create

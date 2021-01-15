@@ -32,4 +32,17 @@ public class User {
             return new ArrayList<>();
         }
     }
+
+    public void changeUsername(String username){
+        this.username = username;
+    }
+
+    public void changePassword(String password){
+        this.password = password;
+    }
+
+    public void changeRoles(String role){
+        this.roles = role;
+    }
+
 }
