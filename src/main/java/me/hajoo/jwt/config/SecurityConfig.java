@@ -1,8 +1,10 @@
 package me.hajoo.jwt.config;
 
 import lombok.RequiredArgsConstructor;
+import me.hajoo.jwt.Repository.UserRepository;
 import me.hajoo.jwt.config.filter.MyFilter3;
 import me.hajoo.jwt.config.jwt.JwtAuthenticationFilter;
+import me.hajoo.jwt.config.jwt.JwtAuthorizationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,6 +21,7 @@ import org.springframework.web.filter.CorsFilter;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final CorsFilter corsFilter;
+    private final UserRepository userRepository;
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder(){
@@ -33,6 +36,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .addFilter(corsFilter) // @CrossOrigin(인증X), 시큐리티 필터에 등록 인증(O)
                 .addFilter(new JwtAuthenticationFilter(authenticationManager()))
+                .addFilter(new JwtAuthorizationFilter(authenticationManager(), userRepository))
                 .formLogin().disable()
                 .httpBasic().disable()
                 .authorizeRequests()

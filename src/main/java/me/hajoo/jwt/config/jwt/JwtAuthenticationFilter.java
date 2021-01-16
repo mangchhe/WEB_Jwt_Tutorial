@@ -35,11 +35,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         System.out.println("로그인 시도");
 
         try {
-            /*BufferedReader br = request.getReader();
-            String input = null;
-            while((input = br.readLine()) != null){
-                System.out.println(input);
-            }*/
 
             ObjectMapper objectMapper = new ObjectMapper();
             User user = objectMapper.readValue(request.getInputStream(), User.class);
@@ -83,8 +78,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 .withSubject("cos토큰")
                 .withExpiresAt(new Date(System.currentTimeMillis() + 60000))
                 .withClaim("id", principal.getUser().getId())
-                .withClaim("username", principal.getUser().getPassword())
-                .sign(Algorithm.HMAC256(key));
+                .withClaim("username", principal.getUser().getUsername())
+                .sign(Algorithm.HMAC512(key));
 
         response.addHeader("Authorization", "Bearer " + jwtToken);
     }

@@ -15,11 +15,10 @@ public class MyFilter3 implements Filter {
         res.setCharacterEncoding("UTF-8");
 
         if(req.getMethod().equals("POST")) {
-            System.out.println("POST 요청");
-            String headerAuth = req.getHeader("Authorization");
-            System.out.println(headerAuth);
 
-            if(headerAuth.equals("cos")){
+            String headerAuth = req.getHeader("test");
+
+            if(headerAuth.equals("test")){
                 chain.doFilter(req, res);
             }else{
                 PrintWriter out = res.getWriter();
