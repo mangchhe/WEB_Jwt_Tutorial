@@ -1,5 +1,6 @@
 package me.hajoo.jwt.config.auth;
 
+import lombok.Getter;
 import me.hajoo.jwt.domain.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -7,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.ArrayList;
 import java.util.Collection;
 
+@Getter
 public class PrincipalDetails implements UserDetails {
 
     private User user;

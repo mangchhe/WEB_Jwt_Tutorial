@@ -1,5 +1,7 @@
 package me.hajoo.jwt.config.jwt;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import me.hajoo.jwt.config.auth.PrincipalDetails;
@@ -14,8 +16,8 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Date;
 
 // Spring Security 에서 UsernamePasswordAuthenticationFilter 존재
 // /login POST 요청해서 username, password 전송하면 UsernamePasswordAuthenticationFilter 동작
@@ -30,6 +32,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
 
+        System.out.println("로그인 시도");
 
         try {
             /*BufferedReader br = request.getReader();
@@ -69,7 +72,20 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     // JWT 토큰을 만들어서 request 요청한 사용자에게 JWT토큰을 response 해주면 됨
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
-        System.out.println("인증 완료");
-        super.successfulAuthentication(request, response, chain, authResult);
+
+        System.out.println("로그인 후 토큰 생성");
+
+        PrincipalDetails principal = (PrincipalDetails) authResult.getPrincipal();
+
+        String key = "cos";
+
+        String jwtToken = JWT.create()
+                .withSubject("cos토큰")
+                .withExpiresAt(new Date(System.currentTimeMillis() + 60000))
+                .withClaim("id", principal.getUser().getId())
+                .withClaim("username", principal.getUser().getPassword())
+                .sign(Algorithm.HMAC256(key));
+
+        response.addHeader("Authorization", "Bearer " + jwtToken);
     }
 }
