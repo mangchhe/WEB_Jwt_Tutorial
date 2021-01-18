@@ -4,10 +4,10 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import me.hajoo.jwt.config.auth.PrincipalDetails;
 import me.hajoo.jwt.domain.User;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -24,6 +24,7 @@ import java.util.Date;
 // formLogin 을 disable 해놔서 자동으로 작동하지 않는다.
 
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
@@ -56,8 +57,18 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             // JWT 토큰을 사용하면서 세션을 만들 이유가 없지만, 권한 처리 때문에 session을 넣어줌
             return authentication;
 
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (BadCredentialsException e) {
+            log.info("비밀번호가 일치하지 않습니다.");
+        } catch (LockedException e){
+            log.info("계정이 잠겨 있습니다.");
+        } catch (DisabledException e){
+            log.info("계정이 비활성화 되어있습니다.");
+        } catch (AccountExpiredException e){
+            log.info("계정 유효 기간이 만료되었습니다.");
+        } catch (CredentialsExpiredException e){
+            log.info("계정 비밀번호 유효 기간이 만료되었습니다.");
+        } catch (Exception e){
+            log.info("이외");
         }
 
         return null;
