@@ -2,6 +2,9 @@ package me.hajoo.jwt.config.jwt;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.SignatureVerificationException;
+import com.auth0.jwt.exceptions.TokenExpiredException;
+import lombok.extern.slf4j.Slf4j;
 import me.hajoo.jwt.Repository.UserRepository;
 import me.hajoo.jwt.config.auth.PrincipalDetails;
 import me.hajoo.jwt.domain.User;
@@ -19,6 +22,7 @@ import java.io.IOException;
 
 // BasicAuthenticationFilter
 // 권한이나 인증이 필요한 특정 주소를 요청할 때 위에 필터를 거친다
+@Slf4j
 public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
 
     private UserRepository userRepository;
@@ -43,25 +47,32 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
         // JWT 토큰을 검증을 해서 정상적인 사용자인지 확인
         String jwtToken = request.getHeader("Authorization").replace("Bearer ", "");
 
-        String username = JWT.require(Algorithm.HMAC512("cos")).build()
-                .verify(jwtToken).getClaim("username").asString();
+        try {
+            String username = JWT.require(Algorithm.HMAC512("cos")).build()
+                    .verify(jwtToken).getClaim("username").asString();
 
-        // 서명이 정상적으로 이루어짐
-        if(username != null){
+            // 서명이 정상적으로 이루어짐
+            if(username != null){
 
-            User user = userRepository.findByUsername(username);
+                User user = userRepository.findByUsername(username);
 
-            PrincipalDetails principalDetails = new PrincipalDetails(user);
-            // Jwt 토큰 서명을 통해서 서명이 정상이면 Authentication 객체를 만듬
-            Authentication authentication =
-                    new UsernamePasswordAuthenticationToken(principalDetails, null, principalDetails.getAuthorities());
+                PrincipalDetails principalDetails = new PrincipalDetails(user);
+                // Jwt 토큰 서명을 통해서 서명이 정상이면 Authentication 객체를 만듬
+                Authentication authentication =
+                        new UsernamePasswordAuthenticationToken(principalDetails, null, principalDetails.getAuthorities());
 
-            // 강제로 시큐리티의 세션에 접근하여 Authentication 객체에 저장
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+                // 강제로 시큐리티의 세션에 접근하여 Authentication 객체에 저장
+                SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            chain.doFilter(request, response);
+                chain.doFilter(request, response);
+            }
+        } catch (TokenExpiredException ignored){
+            log.info("토큰 기간이 만료되었습니다.");
+        } catch (SignatureVerificationException e){
+            log.info("토큰이 누군가에 의해 변경되었습니다.");
+        } catch (NullPointerException e){
+            log.info("해당 토큰에 사용자가 존재하지 않습니다.");
         }
-
 
     }
 }
